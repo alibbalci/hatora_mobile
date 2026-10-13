@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
+import '../theme/app_theme.dart';
 
 /// TR: Tüm modal sheet'lerin (ör. PDF Dışa Aktar) paylaştığı tutamaç +
 /// başlık + kapatma iskeleti. Sayfa geçişi yerine tek, tutarlı bir sheet
@@ -13,12 +14,18 @@ Future<T?> showAppBottomSheet<T>({
   required String title,
   required WidgetBuilder builder,
   bool isScrollControlled = true,
+  String? subtitle,
+  IconData? icon,
 }) => showModalBottomSheet<T>(
   context: context,
   isScrollControlled: isScrollControlled,
   useSafeArea: true,
-  builder: (context) =>
-      AppBottomSheetContent(title: title, child: builder(context)),
+  builder: (context) => AppBottomSheetContent(
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    child: builder(context),
+  ),
 );
 
 class AppBottomSheetContent extends StatelessWidget {
@@ -26,9 +33,13 @@ class AppBottomSheetContent extends StatelessWidget {
     super.key,
     required this.title,
     required this.child,
+    this.subtitle,
+    this.icon,
   });
   final String title;
   final Widget child;
+  final String? subtitle;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -54,13 +65,39 @@ class AppBottomSheetContent extends StatelessWidget {
           ),
           child: Row(
             children: [
+              if (icon != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentSoft,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
               Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleLarge),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
                 ),
               ),
               IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.surfaceMuted,
+                  shape: const CircleBorder(),
+                ),
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.close),
                 tooltip: 'Kapat',

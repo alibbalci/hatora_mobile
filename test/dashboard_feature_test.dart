@@ -57,6 +57,30 @@ class ThrowingDashboardRemote extends DashboardRemoteDataSource {
 }
 
 void main() {
+  test('dashboard preserves actual calendar and upcoming counts; missing study is not fabricated', () {
+    final json = dashboardJson();
+    expect(mapDashboard(DashboardDto.fromJson(json)).study, isNull);
+    json['study'] = {
+      'today': '2026-10-12',
+      'weekDays': [
+        {
+          'date': '2026-10-12',
+          'reviewsCompleted': 0,
+          'questionsAdded': 1,
+          'goalCompleted': false,
+        },
+      ],
+      'tomorrowQuestionCount': 5,
+      'tomorrowTopicCount': 3,
+    };
+    final study = mapDashboard(DashboardDto.fromJson(json)).study!;
+    expect(study.today, DateTime(2026, 10, 12));
+    expect(study.weekDays.first.active, isTrue);
+    expect(study.weekDays.first.goalCompleted, isFalse);
+    expect(study.tomorrowTopicCount, 3);
+    expect(study.tomorrowQuestionCount, 5);
+  });
+
   test('full response maps without recomputing due/goal/streak/xp', () {
     final summary = mapDashboard(
       DashboardDto.fromJson(dashboardJson(activeSessionId: 'session-1')),

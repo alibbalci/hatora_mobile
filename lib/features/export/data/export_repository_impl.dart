@@ -9,6 +9,9 @@ class ExportRepositoryImpl implements ExportRepository {
   final ExportRemoteDataSource remote;
 
   @override
+  Future<ExportOptions> options() => repositoryCall(remote.options);
+
+  @override
   Future<ExportJob> createExport({String? subjectId, String? topicId}) =>
       repositoryCall(
         () async => mapExportJob(

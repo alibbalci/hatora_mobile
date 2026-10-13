@@ -1,5 +1,6 @@
 abstract final class Routes {
   static const splash = '/';
+  static const welcome = '/welcome';
   static const exams = '/onboarding';
   static const goal = '/onboarding/goal';
   static const value = '/onboarding/value';
@@ -16,6 +17,7 @@ abstract final class Routes {
   static const more = '/more';
   static const profile = more;
   static const capture = '/question/capture';
+  static const camera = '/question/camera';
   static const confirm = '/question/confirm';
   static const topics = '/question/topics';
   static const drawing = '/drawing';

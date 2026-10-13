@@ -11,12 +11,23 @@ import '../../question/presentation/question_screens.dart';
 import '../domain/review_models.dart';
 import 'review_states.dart';
 import 'review_session_view_model.dart';
+import 'question_learned_moment.dart';
+import '../../progress/presentation/daily_goal_complete_screen.dart';
+import '../../progress/domain/progress_models.dart';
 
-class ReviewSessionScreen extends ConsumerWidget {
+class ReviewSessionScreen extends ConsumerStatefulWidget {
   const ReviewSessionScreen({super.key, required this.session});
   final ReviewSessionContext session;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReviewSessionScreen> createState() =>
+      _ReviewSessionScreenState();
+}
+
+class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
+  ReviewSessionContext get session => widget.session;
+  bool advancing = false;
+  @override
+  Widget build(BuildContext context) {
     final provider = reviewSessionViewModelProvider(session);
     final state = ref.watch(provider);
     final vm = ref.read(provider.notifier);
@@ -24,8 +35,39 @@ class ReviewSessionScreen extends ConsumerWidget {
       if (previous?.result != next.result && next.result != null) {
         ref.invalidate(progressViewModelProvider);
         ref.invalidate(dashboardViewModelProvider);
+        ref.invalidate(myQuestionsViewModelProvider);
+        ref.invalidate(statisticsViewModelProvider);
+        ref.invalidate(questionDetailViewModelProvider);
       }
     });
+    if (state.phase == ReviewSessionPhase.result && state.result != null) {
+      ref.listen(_answeredProgressProvider(state.result!.itemId), (_, next) {
+        final progress = next.asData?.value;
+        if (progress != null && state.result?.mastered != true && !advancing) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted &&
+                ref.read(provider).result?.itemId == state.result!.itemId) {
+              _celebrate(context, progress, vm);
+            }
+          });
+        }
+      });
+      ref.watch(_answeredProgressProvider(state.result!.itemId));
+    }
+    if (state.phase == ReviewSessionPhase.result &&
+        state.result?.mastered == true &&
+        state.result?.skipped == false &&
+        state.item != null) {
+      return QuestionLearnedMoment(
+        key: ValueKey(state.result!.itemId),
+        item: state.item!,
+        result: state.result!,
+        image: state.image?.bytes,
+        answerCount: session.answerOptionCount,
+        onNext: () => _advance(context, state.result!, vm),
+        onClose: () => context.go(Routes.review),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tekrar'),
@@ -177,11 +219,12 @@ class ReviewSessionScreen extends ConsumerWidget {
                   'Hata nedeni',
                   reasonLabels[result.mistakeReason]!,
                 ),
-              _infoLine(
-                context,
-                'Sonraki tekrar',
-                _date(result.nextReviewDate),
-              ),
+              if (result.nextReviewDate != null)
+                _infoLine(
+                  context,
+                  'Sonraki tekrar',
+                  _date(result.nextReviewDate!),
+                ),
               if (result.mastered)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.sm),
@@ -197,7 +240,7 @@ class ReviewSessionScreen extends ConsumerWidget {
                         'Bu soru öğrenildi.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.success,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -215,9 +258,64 @@ class ReviewSessionScreen extends ConsumerWidget {
       const SizedBox(height: AppSpacing.sm),
       HatoraPrimaryButton(
         label: result.sessionCompleted ? 'Tamamla' : 'Sıradaki soru',
-        onPressed: vm.loadNext,
+        onPressed: () => _advance(context, result, vm),
       ),
     ];
+  }
+
+  Future<bool> _celebrate(
+    BuildContext context,
+    UserProgress progress,
+    ReviewSessionViewModel vm,
+  ) async {
+    final userId = ref.read(authViewModelProvider).user?.id;
+    if (userId == null ||
+        !ref
+            .read(dailyCelebrationGateProvider.notifier)
+            .claim(userId, progress.today)) {
+      return false;
+    }
+    advancing = true;
+    final more = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (c) => Dialog.fullscreen(
+        child: DailyGoalCompleteScreen(
+          progress: progress,
+          onFinish: () => Navigator.pop(c, false),
+          onMore: () => Navigator.pop(c, true),
+        ),
+      ),
+    );
+    advancing = false;
+    if (!mounted || !context.mounted) return true;
+    if (more == true) {
+      await vm.loadNext();
+    } else {
+      context.go(Routes.home);
+    }
+    return true;
+  }
+
+  Future<void> _advance(
+    BuildContext context,
+    AnswerResult result,
+    ReviewSessionViewModel vm,
+  ) async {
+    if (advancing) return;
+    advancing = true;
+    UserProgress? progress;
+    try {
+      progress = await ref.read(
+        _answeredProgressProvider(result.itemId).future,
+      );
+    } catch (_) {
+      /* The answer is saved; progress can be retried later. */
+    }
+    if (!mounted || !context.mounted) return;
+    advancing = false;
+    if (progress != null && await _celebrate(context, progress, vm)) return;
+    if (mounted) await vm.loadNext();
   }
 
   Widget _infoLine(BuildContext context, String label, String value) => Padding(
@@ -304,3 +402,8 @@ String _date(DateTime date) {
   ];
   return '${date.day} ${months[date.month - 1]} ${date.year}';
 }
+
+final _answeredProgressProvider = FutureProvider.autoDispose
+    .family<UserProgress, String>(
+      (ref, itemId) => ref.read(progressRepositoryProvider).getProgress(),
+    );

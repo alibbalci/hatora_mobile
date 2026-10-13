@@ -54,8 +54,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Hadi başlayalım'));
+      await tester.tap(find.text('Hadi başlayalım'));
+      await tester.pumpAndSettle();
       expect(find.text('Hangi sınava\nhazırlanıyorsun?'), findsOneWidget);
-      await tester.tap(find.text(choice.label));
+      await tester.tap(find.text('Test sınavı 2026'));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.text('Devam et'),
@@ -64,16 +67,27 @@ void main() {
       );
       await tester.tap(find.text('Devam et'));
       await tester.pumpAndSettle();
-      expect(find.text('Günlük hedef'), findsOneWidget);
+      expect(find.text('Küçük adımlar,\nkalıcı öğrenme.'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('20 soru'),
+        find.text('20'),
         150,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.text('20 soru'));
+      await tester.tap(find.text('20'));
       await tester.pumpAndSettle();
       container.read(routerProvider).pop();
       await tester.pumpAndSettle();
+      expect(container.read(onboardingViewModelProvider).dailyReviewGoal, 20);
+      expect(
+        container.read(onboardingViewModelProvider).selectedExam?.editionId,
+        'edition',
+      );
+      container.read(routerProvider).go(Routes.value);
+      await tester.pumpAndSettle();
+      expect(find.text('20 soru'), findsOneWidget);
+      await tester.tap(find.text('E-postayla hesap oluştur'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hesabını oluştur'), findsOneWidget);
       expect(container.read(onboardingViewModelProvider).dailyReviewGoal, 20);
       expect(
         container.read(onboardingViewModelProvider).selectedExam?.editionId,
@@ -118,11 +132,11 @@ void main() {
       await tester.pumpWidget(screen(QuestionConfirmScreen(seed: seed)));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('Zorluk *'),
+        find.text('Zorluk'),
         250,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('Zorluk *'), findsOneWidget);
+      expect(find.text('Zorluk'), findsOneWidget);
       expect(tester.takeException(), null);
     });
   }

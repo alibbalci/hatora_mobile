@@ -93,7 +93,9 @@ AnswerResult mapAnswerResult(AnswerResultDto dto) => AnswerResult(
   correctAnswer: dto.correctAnswer,
   previousStage: dto.previousStage,
   newStage: dto.newStage,
-  nextReviewDate: DateTime.parse(dto.nextReviewDate),
+  nextReviewDate: dto.nextReviewDate == null
+      ? null
+      : DateTime.parse(dto.nextReviewDate!),
   questionStatus: dto.questionStatus,
   mastered: dto.mastered,
   shortNote: dto.shortNote,

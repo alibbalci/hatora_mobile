@@ -23,6 +23,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
     GetProfileOverviewUseCase get,
     UpdateProfileNameUseCase updateName,
     UpdateDailyGoalUseCase updateGoal,
+    SwitchProfileExamUseCase switchExam,
   })
   Function(Ref)
   resolve;
@@ -81,7 +82,11 @@ class ProfileViewModel extends Notifier<ProfileState> {
     return _save(() => resolve(ref).updateGoal(goal));
   }
 
+  Future<bool> changeExam(String editionId) =>
+      _save(() => resolve(ref).switchExam(editionId));
+
   Future<bool> _save(Future<Object> Function() action) async {
+    if (state.phase == ProfilePhase.saving) return false;
     final old = state.overview;
     state = ProfileState(phase: ProfilePhase.saving, overview: old);
     try {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import 'app_failure.dart';
@@ -7,8 +9,21 @@ AppFailure mapFailure(Object error) {
   if (error is! DioException) return const AppFailure(FailureKind.unknown);
   final response = error.response;
   if (response == null) return const AppFailure(FailureKind.network);
-  final body = response.data;
-  final code = body is Map ? body['code'] as String? : null;
+  var body = response.data;
+  if (body is List<int>) {
+    try {
+      body = jsonDecode(utf8.decode(body));
+    } on FormatException {
+      body = null;
+    }
+  }
+  final code = body is Map && body['code'] is String
+      ? body['code'] as String
+      : null;
+  final seconds = int.tryParse(response.headers.value('retry-after') ?? '');
+  final retryAfter = seconds != null && seconds >= 0
+      ? Duration(seconds: seconds)
+      : null;
   final details = body is Map ? body['details'] : null;
   final fieldErrors = details is Map ? details['fieldErrors'] : null;
   final fields = fieldErrors is List
@@ -29,7 +44,12 @@ AppFailure mapFailure(Object error) {
   };
   // TR: Ham mesaj ve reddedilen değerler UI'ya taşınmaz.
   // EN: Raw messages and rejected values never reach presentation.
-  return AppFailure(kind, code: code, fields: List.unmodifiable(fields));
+  return AppFailure(
+    kind,
+    code: code,
+    fields: List.unmodifiable(fields),
+    retryAfter: retryAfter,
+  );
 }
 
 Future<T> repositoryCall<T>(Future<T> Function() action) async {

@@ -130,7 +130,7 @@ class AnswerResult {
   final ReviewResult? result;
   final String? selectedAnswer, shortNote;
   final int previousStage, newStage;
-  final DateTime nextReviewDate;
+  final DateTime? nextReviewDate;
   final MistakeReason? mistakeReason;
   final List<SolutionImage> solutionImages;
   final Uri imageUri;

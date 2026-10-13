@@ -19,6 +19,8 @@ class ExportJob {
   final DateTime createdAt;
   final DateTime? completedAt, expiresAt;
   final Uri? downloadUri;
+  bool expiredAt(DateTime now) =>
+      expiresAt != null && !now.isBefore(expiresAt!);
 }
 
 class ExportFile {
@@ -29,4 +31,16 @@ class ExportFile {
 
 abstract interface class ExportFileOpener {
   Future<void> open(Uint8List bytes, String fileName);
+}
+
+class ExportSubjectCount {
+  const ExportSubjectCount(this.id, this.name, this.count);
+  final String id, name;
+  final int count;
+}
+
+class ExportOptions {
+  const ExportOptions(this.totalCount, this.subjects);
+  final int totalCount;
+  final List<ExportSubjectCount> subjects;
 }

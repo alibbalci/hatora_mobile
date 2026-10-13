@@ -56,12 +56,15 @@ class LoadQuestionCatalogUseCase {
   const LoadQuestionCatalogUseCase(this.onboarding, this.catalog);
   final OnboardingRepository onboarding;
   final CatalogRepository catalog;
-  Future<QuestionCatalog> call() async {
+  Future<QuestionCatalog> call({String? examId}) async {
+    if (examId != null && examId.isNotEmpty) {
+      return catalog.questionCatalog(examId);
+    }
     final status = await onboarding.status();
-    final examId = status.examId;
-    if (examId == null) {
+    final activeExamId = status.examId;
+    if (activeExamId == null) {
       throw const AppFailure(FailureKind.businessRule, code: 'NO_ACTIVE_EXAM');
     }
-    return catalog.questionCatalog(examId);
+    return catalog.questionCatalog(activeExamId);
   }
 }

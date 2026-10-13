@@ -16,6 +16,7 @@ import '../features/auth/presentation/auth_view_model.dart';
 import '../features/catalog/data/catalog_remote_data_source.dart';
 import '../features/catalog/data/catalog_repository_impl.dart';
 import '../features/catalog/domain/catalog.dart';
+import '../features/catalog/domain/exam_schedule.dart';
 import '../features/catalog/presentation/topic_picker_view_model.dart';
 import '../features/dashboard/data/dashboard_remote_data_source.dart';
 import '../features/dashboard/data/dashboard_repository_impl.dart';
@@ -33,6 +34,7 @@ import '../features/onboarding/data/onboarding_data.dart';
 import '../features/onboarding/domain/onboarding.dart';
 import '../features/onboarding/presentation/onboarding_view_model.dart';
 import '../features/question/data/platform_image_picker.dart';
+import '../features/question/data/platform_question_image_cropper.dart';
 import '../features/question/data/question_remote_data_source.dart';
 import '../features/question/data/question_repository_impl.dart';
 import '../features/question/domain/question.dart';
@@ -62,6 +64,8 @@ import '../features/statistics/data/statistics_repository_impl.dart';
 import '../features/statistics/domain/get_statistics_use_case.dart';
 import '../features/statistics/domain/statistics_repository.dart';
 import '../features/statistics/presentation/statistics_view_model.dart';
+import 'router.dart';
+import 'routes.dart';
 
 // TR: Somut sınıflar yalnızca bu bileşim noktasında bağlanır.
 // EN: Concrete implementations are wired only at this composition root.
@@ -98,6 +102,13 @@ final catalogRepositoryProvider = Provider<CatalogRepository>(
   (ref) =>
       CatalogRepositoryImpl(CatalogRemoteDataSource(ref.watch(dioProvider))),
 );
+final examScheduleProvider = FutureProvider.autoDispose
+    .family<List<ExamSessionSchedule>, ExamScheduleKey>(
+      (ref, key) =>
+          GetExamScheduleUseCase(ref.read(catalogRepositoryProvider))
+              .call(key.examId, key.editionId),
+    );
+
 final onboardingRepositoryProvider = Provider<OnboardingRepository>(
   (ref) => OnboardingRepositoryImpl(
     OnboardingRemoteDataSource(ref.watch(dioProvider)),
@@ -130,8 +141,15 @@ final exportRepositoryProvider = Provider<ExportRepository>(
 final exportFileOpenerProvider = Provider<ExportFileOpener>(
   (ref) => const PlatformExportFileOpener(),
 );
-final imagePickerProvider = Provider<ImagePickerService>(
-  (ref) => PlatformImagePicker(ImagePicker()),
+final questionImageCropperProvider = Provider<QuestionImageCropper>(
+  (ref) => const PlatformQuestionImageCropper(),
+);
+final Provider<ImagePickerService> imagePickerProvider = Provider(
+  (ref) => PlatformImagePicker(
+    ImagePicker(),
+    cropper: ref.watch(questionImageCropperProvider),
+    takePhoto: () => ref.read(routerProvider).push<String>(Routes.camera),
+  ),
 );
 
 final authViewModelProvider = NotifierProvider<AuthViewModel, AuthState>(
@@ -189,7 +207,7 @@ final exportViewModelProvider =
       ),
     );
 final captureViewModelProvider =
-    NotifierProvider<QuestionCaptureViewModel, CaptureState>(
+    NotifierProvider.autoDispose<QuestionCaptureViewModel, CaptureState>(
       () => QuestionCaptureViewModel(
         (ref) => (
           pick: PickQuestionImageUseCase(ref.read(imagePickerProvider)),
@@ -298,6 +316,13 @@ final profileViewModelProvider =
           updateGoal: UpdateDailyGoalUseCase(
             ref.read(onboardingRepositoryProvider),
           ),
+          switchExam: SwitchProfileExamUseCase(
+            ref.read(onboardingRepositoryProvider),
+          ),
         ),
       ),
     );
+
+final exportOptionsProvider = FutureProvider.autoDispose<ExportOptions>(
+  (ref) => ref.read(exportRepositoryProvider).options(),
+);

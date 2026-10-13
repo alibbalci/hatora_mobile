@@ -15,50 +15,24 @@ class AppShell extends StatelessWidget {
   static const paths = [
     Routes.home,
     Routes.plan,
+    Routes.capture,
     Routes.statistics,
     Routes.notebook,
-    Routes.more,
   ];
   @override
   Widget build(BuildContext context) {
     final index = paths.indexOf(location).clamp(0, paths.length - 1);
     return Scaffold(
       body: child,
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.line)),
-        ),
-        child: NavigationBar(
-          selectedIndex: index,
-          onDestinationSelected: (i) => context.go(paths[i]),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Ana Sayfa',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined),
-              selectedIcon: Icon(Icons.calendar_month_rounded),
-              label: 'Plan',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined),
-              selectedIcon: Icon(Icons.bar_chart_rounded),
-              label: 'İstatistik',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.auto_stories_outlined),
-              selectedIcon: Icon(Icons.auto_stories_rounded),
-              label: 'Sorularım',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person_rounded),
-              label: 'Profil',
-            ),
-          ],
-        ),
+      bottomNavigationBar: HatoraBottomBar(
+        index: index,
+        onSelected: (i) {
+          if (i == 2) {
+            context.push(Routes.capture);
+          } else {
+            context.go(paths[i]);
+          }
+        },
       ),
     );
   }
@@ -113,4 +87,127 @@ class MoreScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _CaptureIcon extends StatelessWidget {
+  const _CaptureIcon();
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 48,
+    height: 48,
+    decoration: BoxDecoration(
+      color: AppColors.accent,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: const Icon(Icons.add_rounded, color: AppColors.surface, size: 28),
+  );
+}
+
+class HatoraBottomBar extends StatelessWidget {
+  const HatoraBottomBar({
+    super.key,
+    required this.index,
+    required this.onSelected,
+  });
+  final int index;
+  final ValueChanged<int> onSelected;
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      border: Border.all(color: AppColors.line),
+    ),
+    child: SafeArea(
+      top: false,
+      child: SizedBox(
+        height: 68,
+        child: Row(
+          children: [
+            for (var i = 0; i < 5; i++)
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  selected: i != 2 && index == i,
+                  label: [
+                    'Ana sayfa',
+                    'Plan',
+                    'Soru ekle',
+                    'İstatistik',
+                    'Sorularım',
+                  ][i],
+                  child: Tooltip(
+                    message: [
+                      'Ana sayfa',
+                      'Plan',
+                      'Soru ekle',
+                      'İstatistik',
+                      'Sorularım',
+                    ][i],
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => onSelected(i),
+                      child: Center(
+                        child: i == 2
+                            ? const _CaptureIcon()
+                            : Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 50,
+                                    height: 32,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: index == i
+                                          ? AppColors.accentSoft
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Icon(
+                                      [
+                                        Icons.home_outlined,
+                                        Icons.calendar_month_outlined,
+                                        Icons.add_rounded,
+                                        Icons.bar_chart_rounded,
+                                        Icons.auto_stories_outlined,
+                                      ][i],
+                                      size: 23,
+                                      color: index == i
+                                          ? AppColors.accent
+                                          : AppColors.secondaryText,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    [
+                                      'Ana sayfa',
+                                      'Plan',
+                                      '',
+                                      'İstatistik',
+                                      'Sorularım',
+                                    ][i],
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: index == i
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                      color: index == i
+                                          ? AppColors.accent
+                                          : AppColors.secondaryText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

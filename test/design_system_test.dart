@@ -8,6 +8,7 @@ import 'package:hatora_mobile/app/routes.dart';
 import 'package:hatora_mobile/app/shell.dart';
 import 'package:hatora_mobile/core/theme/app_theme.dart';
 import 'package:hatora_mobile/core/widget/components.dart';
+import 'package:hatora_mobile/core/widget/reference_widgets.dart';
 import 'package:hatora_mobile/features/dashboard/domain/dashboard_models.dart';
 import 'package:hatora_mobile/features/question/domain/question.dart';
 import 'package:hatora_mobile/features/question/presentation/my_questions_screens.dart';
@@ -42,34 +43,25 @@ void main() {
     return container;
   }
 
-  testWidgets(
-    'bottom navigation renders one NavigationBar with all 5 destinations',
-    (tester) async {
-      final container = setup();
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const HatoraApp(),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.byType(BottomNavigationBar), findsNothing);
-      for (final label in [
-        'Ana Sayfa',
-        'Plan',
-        'İstatistik',
-        'Sorularım',
-        'Profil',
-      ]) {
-        expect(find.text(label), findsOneWidget);
-      }
-      expect(AppShell.paths, hasLength(5));
-    },
-  );
+  testWidgets('bottom navigation renders a centered five action bar', (
+    tester,
+  ) async {
+    final container = setup();
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const HatoraApp()),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(HatoraBottomBar), findsOneWidget);
+    expect(find.byType(BottomNavigationBar), findsNothing);
+    for (final label in ['Ana sayfa', 'Plan', 'İstatistik', 'Sorularım']) {
+      expect(find.text(label), findsOneWidget);
+    }
+    expect(find.byTooltip('Soru ekle'), findsOneWidget);
+    expect(AppShell.paths, hasLength(5));
+  });
 
   testWidgets(
-    'Home primary CTA reflects due count and disables when nothing is due',
+    'Home offers notebook when nothing is due instead of a dead end',
     (tester) async {
       final container = setup();
       final repo = container.read(
@@ -94,11 +86,18 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Bugünlük tekrarın yok'), findsOneWidget);
-      final button = tester.widget<ElevatedButton>(
-        find.byType(ElevatedButton).first,
+      expect(find.text('Defterime göz at'), findsOneWidget);
+      await tester.ensureVisible(find.text('Defterime göz at'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Defterime göz at'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(ReferenceHeader),
+          matching: find.text('Sorularım'),
+        ),
+        findsOneWidget,
       );
-      expect(button.onPressed, isNull);
     },
   );
 

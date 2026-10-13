@@ -22,6 +22,7 @@ const profileUser = UserProfile(
 ProviderContainer container(FakeAuthRepository auth) => ProviderContainer(
   overrides: [
     authRepositoryProvider.overrideWithValue(auth),
+    catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
     onboardingRepositoryProvider.overrideWithValue(FakeOnboardingRepository()),
     progressRepositoryProvider.overrideWithValue(FakeProgressRepository()),
   ],
@@ -116,14 +117,14 @@ void main() {
       expect(find.text('MA'), findsOneWidget);
       expect(find.text(profileUser.email), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('120 XP'),
+        find.text('120'),
         120,
         scrollable: find.byType(Scrollable).last,
       );
-      expect(find.text('120 XP'), findsOneWidget);
-      expect(find.text('Seviye 2'), findsOneWidget);
-      expect(find.text('4 gün'), findsOneWidget);
-      expect(find.text('En uzun: 8 gün'), findsOneWidget);
+      expect(find.text('120'), findsOneWidget);
+      expect(find.text('Sv 2'), findsOneWidget);
+      expect(find.text('4'), findsWidgets);
+      expect(find.text('8'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.text('Aktif sınav'),
         200,
@@ -160,17 +161,17 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Çıkış Yap'),
+      find.text('Çıkış yap'),
       200,
       scrollable: find.byType(Scrollable).last,
     );
-    await tester.tap(find.text('Çıkış Yap').first);
+    await tester.tap(find.text('Çıkış yap').first);
     await tester.pumpAndSettle();
     expect(find.text('Çıkış yapılsın mı?'), findsOneWidget);
     await tester.tap(
       find.descendant(
         of: find.byType(AlertDialog),
-        matching: find.text('Çıkış Yap'),
+        matching: find.text('Çıkış yap'),
       ),
     );
     await tester.pumpAndSettle();

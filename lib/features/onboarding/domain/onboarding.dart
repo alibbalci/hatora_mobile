@@ -15,6 +15,7 @@ class OnboardingStatus {
 
 abstract interface class OnboardingRepository {
   Future<OnboardingStatus> status();
+  Future<OnboardingStatus> activateExam(String editionId);
   Future<OnboardingStatus> complete(String editionId, int dailyGoal);
   Future<int> updateDailyReviewGoal(int dailyGoal);
 }

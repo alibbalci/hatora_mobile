@@ -11,7 +11,7 @@ import 'app_theme.dart';
 abstract final class AppTypography {
   static const heroTitle = TextStyle(
     color: AppColors.surface,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w600,
     fontSize: 24,
     height: 1.15,
   );
@@ -22,7 +22,7 @@ abstract final class AppTypography {
   );
   static const metricValue = TextStyle(
     fontSize: 20,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w600,
     color: AppColors.primaryInk,
   );
   static const metricLabel = TextStyle(

@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:hatora_mobile/app/router.dart';
+import 'package:hatora_mobile/app/routes.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hatora_mobile/app/app.dart';
 import 'package:hatora_mobile/app/providers.dart';
@@ -68,6 +71,74 @@ void main() {
     return container;
   }
 
+  testWidgets('Plan tab shows live review progress and opens review setup', (
+    tester,
+  ) async {
+    final container = setup(
+      dashboard: DashboardSummary(
+        activeExam: dashboardSummary.activeExam,
+        review: const DashboardReviewSummary(
+          dueCount: 5,
+          reviewsCompletedToday: 2,
+          effectiveReviewGoal: 5,
+          goalCompleted: false,
+          hasActiveReviewSession: false,
+        ),
+        progress: dashboardSummary.progress,
+        questions: dashboardSummary.questions,
+      ),
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const HatoraApp()),
+    );
+    await tester.pumpAndSettle();
+    container.read(routerProvider).go(Routes.plan);
+    await tester.pumpAndSettle();
+    expect(find.text('Çalışma planı'), findsOneWidget);
+    expect(find.text('5 soru tekrar bekliyor'), findsOneWidget);
+    await tester.ensureVisible(find.text('Tekrara Başla'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tekrara Başla'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bugünün tekrarı'), findsOneWidget);
+  });
+  testWidgets('Plan shows actionable empty state when nothing is due', (
+    tester,
+  ) async {
+    final container = setup(
+      dashboard: DashboardSummary(
+        activeExam: dashboardSummary.activeExam,
+        review: const DashboardReviewSummary(
+          dueCount: 0,
+          reviewsCompletedToday: 0,
+          effectiveReviewGoal: 0,
+          goalCompleted: true,
+          hasActiveReviewSession: false,
+        ),
+        progress: dashboardSummary.progress,
+        questions: dashboardSummary.questions,
+      ),
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const HatoraApp()),
+    );
+    await tester.pumpAndSettle();
+    container.read(routerProvider).go(Routes.plan);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Bugün serbestsin'),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Bugün serbestsin'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Soru ekle'),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Soru ekle'), findsOneWidget);
+  });
+
   testWidgets('Dashboard loads, user taps Start Review, Review route opens', (
     tester,
   ) async {
@@ -90,6 +161,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Tekrara Başla'), findsOneWidget);
+    await tester.ensureVisible(find.text('Tekrara Başla'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Tekrara Başla'));
     await tester.pumpAndSettle();
     expect(find.text('Bugünün tekrarı'), findsOneWidget);
@@ -121,6 +194,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Tekrara Devam Et'), findsOneWidget);
+      await tester.ensureVisible(find.text('Tekrara Devam Et'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Tekrara Devam Et'));
       await tester.pumpAndSettle();
       expect(find.text('Tekrar'), findsOneWidget);

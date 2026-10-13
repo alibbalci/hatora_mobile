@@ -49,7 +49,7 @@ void main() {
         Routes.home,
         hasExamSelection: false,
       ),
-      Routes.exams,
+      Routes.welcome,
     );
     expect(
       sessionRedirect(

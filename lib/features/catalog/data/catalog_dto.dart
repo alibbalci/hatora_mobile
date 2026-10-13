@@ -1,3 +1,16 @@
+class ExamSessionDto {
+  ExamSessionDto.fromJson(Map<String, dynamic> json)
+    : code = json['code'] as String,
+      name = json['name'] as String,
+      examDate = json['examDate'] == null
+          ? null
+          : DateTime.parse(json['examDate'] as String),
+      sourceUrl = json['sourceUrl'] as String?;
+  final String code, name;
+  final DateTime? examDate;
+  final String? sourceUrl;
+}
+
 class ExamDto {
   ExamDto.fromJson(Map<String, dynamic> json)
     : id = json['id'] as String,

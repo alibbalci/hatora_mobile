@@ -33,6 +33,11 @@ class OnboardingRemoteDataSource {
   Future<OnboardingDto> status() async => OnboardingDto.fromJson(
     (await dio.get<Map<String, dynamic>>('/api/onboarding')).data!,
   );
+  Future<OnboardingDto> activateExam(String editionId) async {
+    await dio.post('/api/users/me/exams', data: {'examEditionId': editionId});
+    return status();
+  }
+
   Future<OnboardingDto> complete(String editionId, int dailyGoal) async =>
       OnboardingDto.fromJson(
         (await dio.post<Map<String, dynamic>>(
@@ -54,6 +59,10 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   @override
   Future<OnboardingStatus> status() =>
       repositoryCall(() async => mapOnboarding(await remote.status()));
+  @override
+  Future<OnboardingStatus> activateExam(String editionId) => repositoryCall(
+    () async => mapOnboarding(await remote.activateExam(editionId)),
+  );
   @override
   Future<OnboardingStatus> complete(String editionId, int dailyGoal) =>
       repositoryCall(

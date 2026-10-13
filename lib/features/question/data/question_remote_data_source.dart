@@ -41,6 +41,9 @@ class QuestionRemoteDataSource {
     if (filters.status != null && filters.status != QuestionStatus.unknown) {
       query['status'] = filters.status!.name.toUpperCase();
     }
+    if (filters.search != null && filters.search!.trim().isNotEmpty) {
+      query['search'] = filters.search!.trim();
+    }
     if (filters.subjectId != null) query['subjectId'] = filters.subjectId;
     if (filters.topicId != null) query['topicId'] = filters.topicId;
     if (filters.difficulty != null) {

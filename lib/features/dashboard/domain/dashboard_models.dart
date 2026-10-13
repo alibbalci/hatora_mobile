@@ -51,9 +51,49 @@ class DashboardSummary {
     required this.review,
     required this.progress,
     required this.questions,
+    this.study,
   });
   final DashboardActiveExam activeExam;
   final DashboardReviewSummary review;
   final DashboardProgressSummary progress;
   final DashboardQuestionSummary questions;
+  final DashboardStudySummary? study;
+}
+
+class DashboardStudyDay {
+  const DashboardStudyDay({
+    required this.date,
+    required this.reviewsCompleted,
+    required this.questionsAdded,
+    required this.goalCompleted,
+  });
+  final DateTime date;
+  final int reviewsCompleted, questionsAdded;
+  final bool goalCompleted;
+  bool get active => reviewsCompleted > 0 || questionsAdded > 0;
+}
+
+class DashboardStudySummary {
+  const DashboardStudySummary({
+    required this.today,
+    required this.weekDays,
+    required this.tomorrowQuestionCount,
+    required this.tomorrowTopicCount,
+    this.upcomingDays = const [],
+  });
+  final DateTime today;
+  final List<DashboardStudyDay> weekDays;
+  final int tomorrowQuestionCount, tomorrowTopicCount;
+  final List<UpcomingStudyDay> upcomingDays;
+}
+
+class UpcomingStudyDay {
+  const UpcomingStudyDay({
+    required this.date,
+    required this.questionCount,
+    required this.subjects,
+  });
+  final DateTime date;
+  final int questionCount;
+  final List<String> subjects;
 }

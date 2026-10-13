@@ -10,11 +10,26 @@ enum FailureKind {
 }
 
 class AppFailure implements Exception {
-  const AppFailure(this.kind, {this.code, this.fields = const []});
+  const AppFailure(
+    this.kind, {
+    this.code,
+    this.fields = const [],
+    this.retryAfter,
+  });
   final FailureKind kind;
   final String? code;
   final List<String> fields;
+  final Duration? retryAfter;
   String get message => switch (code) {
+    'PASSWORD_TOO_LONG' => 'Parolan çok uzun. Biraz kısaltıp tekrar dene.',
+    'ACCOUNT_DISABLED' => 'Bu hesap kullanıma kapalı.',
+    'TOKEN_REUSE_DETECTED' =>
+      'Oturumun yenilenemedi. Lütfen yeniden giriş yap.',
+    'RATE_LIMITED' =>
+      retryAfter == null
+          ? 'Kısa sürede çok fazla işlem yapıldı. Biraz sonra tekrar dene.'
+          : 'İşlem sınırına ulaştın. Yaklaşık ${(retryAfter!.inSeconds / 60).ceil().clamp(1, 1440)} dakika sonra tekrar dene.',
+    'EXPORT_EXPIRED' => 'PDF bağlantısının süresi doldu. Yeni bir PDF oluştur.',
     'INVALID_CREDENTIALS' => 'E-posta veya parola hatalı.',
     'PROFILE_LOAD_FAILED_AFTER_AUTH' => 'Giriş yapıldı, ancak profilin yüklenemedi. Bağlantını kontrol edip tekrar dene.',
     'SESSION_NOT_ACTIVE' => 'Bu tekrar oturumu artık aktif değil.',

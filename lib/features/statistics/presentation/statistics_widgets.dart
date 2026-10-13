@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design/app_stat_card.dart';
+import '../../../core/widget/reference_widgets.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
@@ -8,9 +9,9 @@ import '../../question/presentation/question_screens.dart' show reasonLabels;
 import '../domain/statistics_models.dart';
 
 const statsRangeLabels = {
-  StatsRange.last7Days: 'Son 7 Gün',
-  StatsRange.last30Days: 'Son 30 Gün',
-  StatsRange.allTime: 'Tüm Zamanlar',
+  StatsRange.last7Days: '7 gün',
+  StatsRange.last30Days: '30 gün',
+  StatsRange.allTime: 'Tümü',
 };
 
 class StatsRangeSelector extends StatelessWidget {
@@ -22,18 +23,10 @@ class StatsRangeSelector extends StatelessWidget {
   final StatsRange selected;
   final ValueChanged<StatsRange> onChanged;
   @override
-  Widget build(BuildContext context) => Wrap(
-    spacing: AppSpacing.sm,
-    runSpacing: AppSpacing.sm,
-    children: StatsRange.values
-        .map(
-          (range) => ChoiceChip(
-            label: Text(statsRangeLabels[range]!),
-            selected: selected == range,
-            onSelected: (_) => onChanged(range),
-          ),
-        )
-        .toList(),
+  Widget build(BuildContext context) => ReferenceSegments<StatsRange>(
+    values: statsRangeLabels,
+    selected: selected,
+    onChanged: onChanged,
   );
 }
 

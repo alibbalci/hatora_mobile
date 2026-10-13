@@ -1,4 +1,7 @@
 import 'dart:async';
+
+import 'package:hatora_mobile/features/catalog/domain/exam_schedule.dart';
+
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -137,6 +140,11 @@ class FakeAuthRepository implements AuthRepository {
 
 class FakeCatalogRepository implements CatalogRepository {
   @override
+  Future<List<ExamSessionSchedule>> examSessions(
+    String examId,
+    String editionId,
+  ) async => const [];
+  @override
   Future<List<ExamChoice>> examChoices() async => [choice];
   @override
   Future<QuestionCatalog> questionCatalog(String examId) async =>
@@ -144,6 +152,9 @@ class FakeCatalogRepository implements CatalogRepository {
 }
 
 class FakeOnboardingRepository implements OnboardingRepository {
+  @override
+  Future<OnboardingStatus> activateExam(String editionId) =>
+      complete(editionId, 10);
   int completeCalls = 0;
   @override
   Future<OnboardingStatus> status() async => const OnboardingStatus(
@@ -396,6 +407,9 @@ final exportJob = ExportJob(
 );
 
 class FakeExportRepository implements ExportRepository {
+  @override
+  Future<ExportOptions> options() async =>
+      const ExportOptions(1, [ExportSubjectCount('subject', 'Matematik', 1)]);
   ExportJob job = exportJob;
   AppFailure? createFailure, getFailure, downloadFailure;
   String? lastSubjectId, lastTopicId;

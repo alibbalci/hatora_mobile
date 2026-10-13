@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/error/app_failure.dart';
@@ -71,6 +73,17 @@ class AuthViewModel extends Notifier<AuthState> {
   }) async {
     if (state.busy) return;
     final registering = displayName != null;
+    if (registering && utf8.encode(password).length > 72) {
+      state = const AuthState(
+        status: AuthStatus.guest,
+        failure: AppFailure(
+          FailureKind.validation,
+          code: 'PASSWORD_TOO_LONG',
+          fields: ['password'],
+        ),
+      );
+      return;
+    }
     final invalid =
         email.trim().isEmpty ||
         !email.contains('@') ||

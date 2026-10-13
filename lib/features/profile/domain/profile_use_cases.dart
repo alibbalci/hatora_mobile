@@ -34,3 +34,10 @@ class UpdateDailyGoalUseCase {
   final OnboardingRepository repository;
   Future<int> call(int goal) => repository.updateDailyReviewGoal(goal);
 }
+
+class SwitchProfileExamUseCase {
+  const SwitchProfileExamUseCase(this.repository);
+  final OnboardingRepository repository;
+  Future<OnboardingStatus> call(String editionId) =>
+      repository.activateExam(editionId);
+}

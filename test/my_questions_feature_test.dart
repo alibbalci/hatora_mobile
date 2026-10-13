@@ -181,7 +181,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Tekrar:'), findsOneWidget);
+    expect(find.textContaining('Yarın'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -11,7 +11,7 @@ flutter pub get
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
 
-The default URL reaches the host from the Android emulator. For a physical device, configure a reachable backend URL. Release builds require HTTPS; local cleartext is enabled only in the Android debug manifest.
+The default URL uses 10.0.2.2 on Android and 127.0.0.1 on other platforms. For a physical device, configure a reachable backend URL. Release builds require HTTPS; local cleartext is enabled only in the Android debug manifest.
 
 If desktop plugin symlink creation fails on Windows, use these process-local options for Android work:
 
@@ -28,7 +28,7 @@ flutter analyze
 flutter test
 ```
 
-Tests use fakes and do not need a live backend. Current result: 32 passing tests and clean analysis. APK verification was blocked by DNS failures downloading Google/Flutter Gradle artifacts; see the status report.
+Tests use fakes and do not need a live backend. Current result (2026-10-12): 108 passing tests and clean analysis. APK verification was blocked by DNS failures downloading Google/Flutter Gradle artifacts; see the status report.
 
 ## Documentation
 
@@ -36,4 +36,4 @@ Tests use fakes and do not need a live backend. Current result: 32 passing tests
 - [Implementation status, verification, and deferrals](docs/architecture/MOBILE_IMPLEMENTATION_STATUS.md)
 - [Visual reference](docs/design/hatora-prototip.html)
 
-This pass connects email/password auth, catalog/onboarding, and question analysis/creation. Review and statistics are explicitly deferred. The backend at `../HatoraBackend` is read-only reference material.
+The app connects auth, catalog/onboarding, question management, reviews, statistics, progress, profile, exports and exam session calendars. The backend at `../HatoraBackend` is maintained alongside the mobile app. Live PostgreSQL integration and signed device builds require separate validation.

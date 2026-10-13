@@ -37,25 +37,27 @@ class HatoraPrimaryButton extends StatelessWidget {
     this.onPressed,
     this.busy = false,
     this.busyLabel,
+    this.solidColor,
   });
   final String label;
   final VoidCallback? onPressed;
   final bool busy;
   final String? busyLabel;
+  final Color? solidColor;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
     child: DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: AppRadius.mdAll,
-        gradient: onPressed == null
+        gradient: onPressed == null || solidColor != null
             ? null
             : const LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 colors: [AppColors.accent, AppColors.accentEnd],
               ),
-        color: onPressed == null ? AppColors.line : null,
+        color: onPressed == null ? AppColors.line : solidColor,
       ),
       child: ElevatedButton(
         onPressed: busy ? null : onPressed,
@@ -298,20 +300,28 @@ class EmptyView extends StatelessWidget {
 }
 
 class QuestionImageCard extends StatelessWidget {
-  const QuestionImageCard({super.key, required this.bytes});
+  const QuestionImageCard({
+    super.key,
+    required this.bytes,
+    this.height = 240,
+    this.bottomMargin = AppSpacing.md,
+    this.backgroundColor = AppColors.surfaceMuted,
+  });
+  final double height, bottomMargin;
+  final Color backgroundColor;
   final Uint8List bytes;
   @override
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
-    margin: const EdgeInsets.only(bottom: AppSpacing.md),
+    margin: EdgeInsets.only(bottom: bottomMargin),
     decoration: BoxDecoration(
       borderRadius: AppRadius.lgAll,
       border: Border.all(color: AppColors.line),
-      color: AppColors.surfaceMuted,
+      color: backgroundColor,
     ),
     child: Image.memory(
       bytes,
-      height: 240,
+      height: height,
       width: double.infinity,
       fit: BoxFit.contain,
       semanticLabel: 'Seçilen soru fotoğrafı',
@@ -396,7 +406,7 @@ class AnswerOptions extends StatelessWidget {
                 ? Text(
                     label,
                     style: const TextStyle(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
                   )

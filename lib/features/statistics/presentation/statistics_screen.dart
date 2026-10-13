@@ -5,6 +5,8 @@ import '../../../app/providers.dart';
 import '../../../core/widget/components.dart';
 import 'statistics_view_model.dart';
 import 'statistics_widgets.dart';
+import '../../../core/widget/reference_widgets.dart';
+import 'statistics_reference_widgets.dart';
 
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
@@ -13,11 +15,11 @@ class StatisticsScreen extends ConsumerWidget {
     final state = ref.watch(statisticsViewModelProvider);
     final vm = ref.read(statisticsViewModelProvider.notifier);
     return Scaffold(
-      appBar: AppBar(title: const Text('İstatistikler')),
       body: RefreshIndicator(
         onRefresh: vm.refresh,
         child: PageBody(
           children: [
+            const ReferenceHeader(title: 'İstatistikler', caption: 'Gelişimin'),
             StatsRangeSelector(
               selected: state.range,
               onChanged: vm.changeRange,
@@ -30,32 +32,16 @@ class StatisticsScreen extends ConsumerWidget {
             else ...[
               if (state.failure != null)
                 ErrorView(error: state.failure!, onRetry: vm.retry),
-              const SectionHeader('Genel Bakış'),
-              GeneralOverviewCard(stats: state.bundle!.general),
-              const SectionHeader('Ders Performansı'),
-              if (state.bundle!.subjects.isEmpty)
-                const EmptyView(
-                  title: 'Ders istatistiği yok',
-                  message: 'Bu aralıkta henüz tekrar verisi bulunmuyor.',
-                  icon: Icons.bar_chart,
-                )
-              else
-                for (final s in state.bundle!.subjects)
-                  SubjectStatsCard(stats: s),
-              const SectionHeader('Konu Performansı'),
-              if (state.bundle!.topics.isEmpty)
-                const EmptyView(
-                  title: 'Konu istatistiği yok',
-                  message: 'Bu aralıkta henüz tekrar verisi bulunmuyor.',
-                  icon: Icons.bar_chart,
-                )
-              else
-                for (final t in state.bundle!.topics) TopicStatsCard(stats: t),
-              const SectionHeader('Hata Nedenleri'),
-              for (final m in state.bundle!.mistakeReasons)
-                MistakeReasonBar(stats: m),
-              const SectionHeader('Öğrenme İçgörüleri'),
-              LearningInsightsCard(insights: state.bundle!.insights),
+              const SizedBox(height: 18),
+              StatisticsHero(stats: state.bundle!.general),
+              const SizedBox(height: 14),
+              StatisticsMetrics(stats: state.bundle!.general),
+              const SectionHeader('Performans'),
+              StatisticsPerformance(bundle: state.bundle!),
+              const SizedBox(height: 28),
+              StatisticsMistakes(rows: state.bundle!.mistakeReasons),
+              const SectionHeader('Öğrenme içgörüsü'),
+              StatisticsInsight(insights: state.bundle!.insights),
             ],
           ],
         ),

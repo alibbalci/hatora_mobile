@@ -10,7 +10,7 @@ class AuthRemoteDataSource {
         (await dio.post<Map<String, dynamic>>(
           path,
           data: body,
-          options: Options(extra: {'public': true}),
+          options: Options(extra: {'public': true}, receiveTimeout: const Duration(seconds: 15)),
         )).data!,
       );
   Future<TokenDto> login(String email, String password) =>
@@ -27,7 +27,7 @@ class AuthRemoteDataSource {
     await dio.post<void>(
       '/api/auth/logout',
       data: {'refreshToken': refreshToken, 'allDevices': false},
-      options: Options(extra: {'public': true}),
+      options: Options(extra: {'public': true}, receiveTimeout: const Duration(seconds: 15)),
     );
   }
 

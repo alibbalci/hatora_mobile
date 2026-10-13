@@ -19,12 +19,13 @@ class MyQuestionsState {
     this.items = const [],
     this.page = -1,
     this.hasNext = false,
-    this.filters = const QuestionFilters(),
+    this.filters = const QuestionFilters(status: QuestionStatus.active),
     this.failure,
+    this.totalCount = 0,
   });
   final MyQuestionsPhase phase;
   final List<QuestionSummary> items;
-  final int page;
+  final int page, totalCount;
   final bool hasNext;
   final QuestionFilters filters;
   final AppFailure? failure;
@@ -34,6 +35,7 @@ class MyQuestionsViewModel extends Notifier<MyQuestionsState> {
   MyQuestionsViewModel(this.resolve);
   final GetQuestionsUseCase Function(Ref) resolve;
   bool _requesting = false;
+  int _generation = 0;
   @override
   MyQuestionsState build() {
     Future.microtask(load);
@@ -45,7 +47,8 @@ class MyQuestionsViewModel extends Notifier<MyQuestionsState> {
   Future<void> retry() => _fetch(reset: state.items.isEmpty);
   Future<void> loadMore() => _fetch(reset: false);
   Future<void> setFilters(QuestionFilters filters) async {
-    if (_requesting) return;
+    _generation++;
+    _requesting = false;
     state = MyQuestionsState(filters: filters);
     await _fetch(reset: true);
   }
@@ -64,6 +67,7 @@ class MyQuestionsViewModel extends Notifier<MyQuestionsState> {
   Future<void> _fetch({required bool reset, bool refreshing = false}) async {
     if (_requesting || (!reset && !state.hasNext)) return;
     _requesting = true;
+    final generation = _generation;
     final old = state;
     state = MyQuestionsState(
       phase: refreshing
@@ -73,6 +77,7 @@ class MyQuestionsViewModel extends Notifier<MyQuestionsState> {
           : MyQuestionsPhase.loadingMore,
       items: old.items,
       page: old.page,
+      totalCount: old.totalCount,
       hasNext: old.hasNext,
       filters: old.filters,
     );
@@ -81,7 +86,7 @@ class MyQuestionsViewModel extends Notifier<MyQuestionsState> {
         page: reset ? 0 : old.page + 1,
         filters: old.filters,
       );
-      if (!ref.mounted) return;
+      if (!ref.mounted || generation != _generation) return;
       final items = reset
           ? result.items
           : [
@@ -94,22 +99,24 @@ class MyQuestionsViewModel extends Notifier<MyQuestionsState> {
         phase: items.isEmpty ? MyQuestionsPhase.empty : MyQuestionsPhase.ready,
         items: items,
         page: result.page,
+        totalCount: result.totalElements,
         hasNext: !result.last,
         filters: old.filters,
       );
     } on AppFailure catch (failure) {
-      if (ref.mounted) {
+      if (ref.mounted && generation == _generation) {
         state = MyQuestionsState(
           phase: MyQuestionsPhase.error,
           items: old.items,
           page: old.page,
+          totalCount: old.totalCount,
           hasNext: old.hasNext,
           filters: old.filters,
           failure: failure,
         );
       }
     } finally {
-      _requesting = false;
+      if (generation == _generation) _requesting = false;
     }
   }
 }

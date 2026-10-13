@@ -11,32 +11,36 @@ import 'app_spacing.dart';
 /// semantic tokens; no file has a loose hex color.
 abstract final class AppColors {
   // Neutral surfaces
-  static const background = Color(0xFFF6F7FB);
+  static const background = Color(0xFFF6F6FB);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceMuted = Color(0xFFF1F2F8);
-  static const line = Color(0xFFE4E6F0);
+  static const surfaceMuted = Color(0xFFF0EFF7);
+  static const line = Color(0xFFECEBF5);
 
   // Text
-  static const primaryInk = Color(0xFF1E1B4B);
-  static const secondaryText = Color(0xFF64748B);
+  static const primaryInk = Color(0xFF17153A);
+  static const secondaryText = Color(0xFF8B89A9);
 
   // Brand — deep indigo / blue-violet
-  static const accent = Color(0xFF4F46E5);
+  static const accent = Color(0xFF4F3FE6);
   static const accentEnd = Color(0xFF7C3AED);
-  static const accentSoft = Color(0xFFEEF0FD);
+  static const accentSoft = Color(0xFFECEAFF);
 
   // Semantic status
-  static const success = Color(0xFF1F9D6B);
-  static const successSoft = Color(0xFFE5F6EE);
+  static const success = Color(0xFF13A06A);
+  static const successSoft = Color(0xFFE5F7EF);
   static const warning = Color(0xFFDB9A2C);
   static const warningSoft = Color(0xFFFBF1DF);
   static const error = Color(0xFFDC5B62);
+  static const subjectRose = Color(0xFFA3305A);
+  static const mistakeOrange = Color(0xFFF08A5D);
+  static const levelGold = Color(0xFFFFBC28);
   static const errorSoft = Color(0xFFFBEAEB);
 }
 
 ThemeData buildAppTheme() {
   final base = ThemeData(
     useMaterial3: true,
+    fontFamily: 'Outfit',
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.accent,
       brightness: Brightness.light,
@@ -54,69 +58,82 @@ ThemeData buildAppTheme() {
       )
       .copyWith(
         displaySmall: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 32,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           height: 1.15,
           color: AppColors.primaryInk,
         ),
         headlineMedium: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 27,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           height: 1.2,
           color: AppColors.primaryInk,
         ),
         headlineSmall: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 22,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           height: 1.2,
           color: AppColors.primaryInk,
         ),
         titleLarge: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 20,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           color: AppColors.primaryInk,
         ),
         titleMedium: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 16,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.primaryInk,
         ),
         titleSmall: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 14,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.primaryInk,
         ),
         bodyLarge: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 16,
           height: 1.5,
           color: AppColors.primaryInk,
         ),
         bodyMedium: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 14.5,
           height: 1.5,
           color: AppColors.primaryInk,
         ),
         bodySmall: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 13,
           height: 1.4,
           color: AppColors.secondaryText,
         ),
         labelLarge: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 14,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: AppColors.primaryInk,
         ),
         labelMedium: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: AppColors.secondaryText,
         ),
         labelSmall: const TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: AppColors.secondaryText,
         ),
-      );
+      )
+      .apply(fontFamily: 'Outfit');
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.background,
     textTheme: textTheme,
@@ -133,9 +150,10 @@ ThemeData buildAppTheme() {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
+        fontFamily: 'Outfit',
         color: AppColors.primaryInk,
         fontSize: 19,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w600,
       ),
       iconTheme: IconThemeData(color: AppColors.primaryInk),
     ),
@@ -186,7 +204,11 @@ ThemeData buildAppTheme() {
         disabledBackgroundColor: AppColors.line,
         disabledForegroundColor: AppColors.secondaryText,
         minimumSize: const Size(double.infinity, 52),
-        textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+        textStyle: const TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+        ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       ),
     ),
@@ -195,14 +217,22 @@ ThemeData buildAppTheme() {
         foregroundColor: AppColors.primaryInk,
         minimumSize: const Size(double.infinity, 48),
         side: const BorderSide(color: AppColors.line),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+        textStyle: const TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.accent,
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+        textStyle: const TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.smAll),
       ),
     ),
@@ -214,13 +244,15 @@ ThemeData buildAppTheme() {
       selectedColor: AppColors.accentSoft,
       disabledColor: AppColors.surfaceMuted,
       labelStyle: const TextStyle(
+        fontFamily: 'Outfit',
         color: AppColors.primaryInk,
         fontWeight: FontWeight.w600,
         fontSize: 12.5,
       ),
       secondaryLabelStyle: const TextStyle(
+        fontFamily: 'Outfit',
         color: AppColors.accent,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         fontSize: 12.5,
       ),
       side: const BorderSide(color: AppColors.line),
@@ -238,9 +270,10 @@ ThemeData buildAppTheme() {
       height: 64,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => TextStyle(
+          fontFamily: 'Outfit',
           fontSize: 11,
           fontWeight: states.contains(WidgetState.selected)
-              ? FontWeight.w700
+              ? FontWeight.w600
               : FontWeight.w500,
           color: states.contains(WidgetState.selected)
               ? AppColors.accent

@@ -112,7 +112,10 @@ class ExportViewModel extends Notifier<ExportState> {
   }
 
   Future<void> createExport() async {
-    if (state.phase == ExportPhase.submitting) return;
+    if (state.phase == ExportPhase.submitting ||
+        state.phase == ExportPhase.downloading) {
+      return;
+    }
     state = state.copyWith(phase: ExportPhase.submitting, failure: null);
     try {
       final job = await resolve(ref)
@@ -134,12 +137,22 @@ class ExportViewModel extends Notifier<ExportState> {
         state.phase == ExportPhase.downloading) {
       return;
     }
+    if (job.expiredAt(DateTime.now())) {
+      state = state.copyWith(
+        downloadFailure: const AppFailure(
+          FailureKind.notFound,
+          code: 'EXPORT_EXPIRED',
+        ),
+      );
+      return;
+    }
     state = state.copyWith(
       phase: ExportPhase.downloading,
       downloadFailure: null,
     );
     try {
       final file = await resolve(ref).download(job.id);
+      if (!ref.mounted) return;
       final date = job.createdAt.toIso8601String().substring(0, 10);
       await resolve(ref).save(file.bytes, 'hatora-soru-defteri-$date.pdf');
       if (ref.mounted) state = state.copyWith(phase: ExportPhase.result);
@@ -154,6 +167,10 @@ class ExportViewModel extends Notifier<ExportState> {
   }
 
   void reset() {
+    if (state.phase == ExportPhase.submitting ||
+        state.phase == ExportPhase.downloading) {
+      return;
+    }
     state = state.copyWith(
       phase: ExportPhase.idle,
       job: null,

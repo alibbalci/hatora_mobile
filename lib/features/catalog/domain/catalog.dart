@@ -1,3 +1,5 @@
+import 'exam_schedule.dart';
+
 class Exam {
   const Exam({
     required this.id,
@@ -15,11 +17,12 @@ class ExamChoice {
     required this.exam,
     required this.year,
     this.examDate,
+    this.estimatedDate,
   });
   final String editionId;
   final Exam exam;
   final int year;
-  final DateTime? examDate;
+  final DateTime? examDate, estimatedDate;
   String get label => '${exam.name} · $year';
 }
 
@@ -45,6 +48,17 @@ class QuestionCatalog {
 abstract interface class CatalogRepository {
   Future<List<ExamChoice>> examChoices();
   Future<QuestionCatalog> questionCatalog(String examId);
+  Future<List<ExamSessionSchedule>> examSessions(
+    String examId,
+    String editionId,
+  );
+}
+
+class GetExamScheduleUseCase {
+  const GetExamScheduleUseCase(this.repository);
+  final CatalogRepository repository;
+  Future<List<ExamSessionSchedule>> call(String examId, String editionId) =>
+      repository.examSessions(examId, editionId);
 }
 
 class LoadExamChoicesUseCase {

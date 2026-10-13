@@ -3,13 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/widget/components.dart';
+import '../core/widget/startup_animation.dart';
 import '../features/auth/presentation/auth_screen.dart';
 import '../features/auth/presentation/auth_view_model.dart';
 import '../features/catalog/domain/catalog.dart';
 import '../features/catalog/presentation/topic_picker_screen.dart';
 import '../features/home/presentation/home_screen.dart';
+import '../features/plan/presentation/plan_screen.dart';
 import '../features/onboarding/presentation/onboarding_screens.dart';
 import '../features/question/domain/question.dart';
+import '../features/question/presentation/question_camera_screen.dart';
 import '../features/question/presentation/question_screens.dart';
 import '../features/question/presentation/my_questions_screens.dart';
 import '../features/review/domain/review_models.dart';
@@ -32,14 +35,19 @@ String? sessionRedirect(
     return location == Routes.splash ? null : Routes.splash;
   }
   if (auth.status == AuthStatus.guest) {
-    if (onboarding || location == Routes.auth) return null;
-    return Routes.exams;
+    if (onboarding || location == Routes.auth || location == Routes.welcome) {
+      return null;
+    }
+    return Routes.welcome;
   }
   if (auth.user?.onboardingCompleted != true) {
     if (onboarding) return null;
     return hasExamSelection ? Routes.value : Routes.exams;
   }
-  if (onboarding || location == Routes.auth || location == Routes.splash) {
+  if (onboarding ||
+      location == Routes.welcome ||
+      location == Routes.auth ||
+      location == Routes.splash) {
     return Routes.home;
   }
   return null;
@@ -47,6 +55,7 @@ String? sessionRedirect(
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh();
+  ref.listen(startupGateProvider, (_, _) => refresh.update());
   ref.listen(authViewModelProvider, (previous, next) {
     if (previous?.user?.id != next.user?.id) {
       ref.invalidate(dashboardViewModelProvider);
@@ -63,6 +72,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ref.invalidate(questionImageProvider);
       ref.invalidate(progressViewModelProvider);
       ref.invalidate(profileViewModelProvider);
+      ref.invalidate(examScheduleProvider);
       if (previous?.user != null) ref.invalidate(onboardingViewModelProvider);
     }
     refresh.update();
@@ -71,6 +81,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: Routes.splash,
     refreshListenable: refresh,
     redirect: (context, state) {
+      if (!ref.read(startupGateProvider)) {
+        return state.uri.path == Routes.splash ? null : Routes.splash;
+      }
       final auth = ref.read(authViewModelProvider);
       final selected =
           ref.read(onboardingViewModelProvider).selectedExam != null;
@@ -121,25 +134,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.exams,
         builder: (_, _) => const ExamSelectionScreen(),
       ),
+      GoRoute(path: Routes.welcome, builder: (_, _) => const WelcomeScreen()),
       GoRoute(path: Routes.goal, builder: (_, _) => const DailyGoalScreen()),
       GoRoute(
         path: Routes.value,
         builder: (_, _) => const ValuePropositionScreen(),
       ),
-      GoRoute(path: Routes.auth, builder: (_, _) => const AuthScreen()),
+      GoRoute(
+        path: Routes.auth,
+        builder: (_, s) => AuthScreen(
+          registerInitially: s.uri.queryParameters['register'] == '1',
+        ),
+      ),
       ShellRoute(
         builder: (_, state, child) =>
             AppShell(location: state.uri.path, child: child),
         routes: [
           GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen()),
-          GoRoute(
-            path: Routes.plan,
-            builder: (_, _) => const ComingSoonScreen(
-              title: 'Çalışma planı',
-              message:
-                  'Tekrar oturumların ve çalışma planın burada yer alacak.',
-            ),
-          ),
+          GoRoute(path: Routes.plan, builder: (_, _) => const PlanScreen()),
           GoRoute(
             path: Routes.statistics,
             builder: (_, _) => const StatisticsScreen(),
@@ -157,6 +169,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.capture,
         builder: (_, _) => const QuestionCaptureScreen(),
+      ),
+      GoRoute(
+        path: Routes.camera,
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          fullscreenDialog: true,
+          child: const QuestionCameraScreen(),
+        ),
       ),
       GoRoute(
         path: Routes.confirm,
@@ -210,6 +230,13 @@ class _SessionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(authViewModelProvider);
+    final startupDone = ref.watch(startupGateProvider);
+    if (!startupDone ||
+        (state.status == AuthStatus.restoring && state.failure == null)) {
+      return HatoraStartupAnimation(
+        onFinished: () => ref.read(startupGateProvider.notifier).finish(),
+      );
+    }
     return Scaffold(
       body: PageBody(
         children: [

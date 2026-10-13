@@ -180,10 +180,10 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Son 7 Gün'), findsOneWidget);
-    expect(find.text('Son 30 Gün'), findsOneWidget);
-    expect(find.text('Tüm Zamanlar'), findsOneWidget);
-    await tester.tap(find.text('Tüm Zamanlar'));
+    expect(find.text('7 gün'), findsOneWidget);
+    expect(find.text('30 gün'), findsOneWidget);
+    expect(find.text('Tümü'), findsOneWidget);
+    await tester.tap(find.text('Tümü'));
     expect(selected, StatsRange.allTime);
   });
 

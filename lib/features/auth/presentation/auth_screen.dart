@@ -8,7 +8,8 @@ import '../../../core/widget/components.dart';
 import 'auth_view_model.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
-  const AuthScreen({super.key});
+  const AuthScreen({super.key, this.registerInitially = false});
+  final bool registerInitially;
   @override
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
@@ -18,6 +19,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       password = TextEditingController(),
       name = TextEditingController();
   bool registering = false, obscure = true;
+  @override
+  void initState() {
+    super.initState();
+    registering = widget.registerInitially;
+  }
+
   @override
   void dispose() {
     email.dispose();
@@ -113,7 +120,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   onSubmitted: state.busy ? null : (_) => submit(),
                   decoration: InputDecoration(
                     labelText: 'Parola',
-                    helperText: registering ? '8–100 karakter' : null,
+                    helperText: registering ? 'En az 8 karakter' : null,
                     suffixIcon: IconButton(
                       tooltip: obscure ? 'Parolayı göster' : 'Parolayı gizle',
                       onPressed: () => setState(() => obscure = !obscure),

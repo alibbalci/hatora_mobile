@@ -19,6 +19,11 @@ abstract interface class ImagePickerService {
   Future<SelectedImage?> recover();
 }
 
+abstract interface class QuestionImageCropper {
+  /// Kırpılmış görselin yolunu döner; kullanıcı vazgeçerse null.
+  Future<String?> crop(String path);
+}
+
 enum AnalysisStatus { pending, completed, failed, confirmed, expired }
 
 class QuestionAnalysis {
@@ -107,13 +112,14 @@ class QuestionPage {
 class QuestionFilters {
   const QuestionFilters({
     this.status,
+    this.search,
     this.subjectId,
     this.topicId,
     this.difficulty,
     this.mistakeReason,
   });
   final QuestionStatus? status;
-  final String? subjectId, topicId;
+  final String? subjectId, topicId, search;
   final Difficulty? difficulty;
   final MistakeReason? mistakeReason;
 }
@@ -176,6 +182,7 @@ class Question {
     this.subjectId = '',
     this.sectionName = '',
     this.examCode = '',
+    this.examId = '',
     this.shortNote = '',
     this.source = '',
     this.reviewStage = 0,
@@ -194,6 +201,7 @@ class Question {
       subjectName,
       sectionName,
       examCode,
+      examId,
       correctAnswer,
       shortNote,
       source;

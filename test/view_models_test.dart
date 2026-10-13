@@ -102,6 +102,7 @@ void main() {
     expect(container.read(authViewModelProvider).user, null);
   });
   test('capture selection is explicit, cancellation preserves image, analysis succeeds', () async {
+    container.listen(captureViewModelProvider, (_, _) {});
     final vm = container.read(captureViewModelProvider.notifier);
     await flush();
     await vm.selectImage(ImageOrigin.gallery);
@@ -116,6 +117,20 @@ void main() {
     await vm.analyze();
     expect(container.read(captureViewModelProvider).canContinue, true);
   });
+  test('capture state is cleared once the capture screen is left', () async {
+    final sub = container.listen(captureViewModelProvider, (_, _) {});
+    final vm = container.read(captureViewModelProvider.notifier);
+    await flush();
+    await vm.selectImage(ImageOrigin.gallery);
+    await vm.analyze();
+    expect(container.read(captureViewModelProvider).canContinue, true);
+    sub.close();
+    await flush();
+    container.listen(captureViewModelProvider, (_, _) {});
+    final state = container.read(captureViewModelProvider);
+    expect(state.image, null);
+    expect(state.analysis, null);
+  });
   test(
     'AI failure permits manual continuation with a real analysis id',
     () async {
@@ -125,6 +140,7 @@ void main() {
         manualSelectionRequired: true,
         expiresAt: DateTime.utc(2030),
       );
+      container.listen(captureViewModelProvider, (_, _) {});
       final vm = container.read(captureViewModelProvider.notifier);
       await flush();
       await vm.selectImage(ImageOrigin.gallery);
@@ -139,6 +155,7 @@ void main() {
     'upload failure requires retry and cannot invent manual analysis',
     () async {
       questions.analyzeFailure = const AppFailure(FailureKind.network);
+      container.listen(captureViewModelProvider, (_, _) {});
       final vm = container.read(captureViewModelProvider.notifier);
       await flush();
       await vm.selectImage(ImageOrigin.gallery);
@@ -157,7 +174,7 @@ void main() {
     'Android recovered image is selected without automatic upload',
     () async {
       picker.recovered = selectedImage;
-      container.read(captureViewModelProvider);
+      container.listen(captureViewModelProvider, (_, _) {});
       await flush();
       expect(
         container.read(captureViewModelProvider).phase,

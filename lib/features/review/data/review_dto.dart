@@ -103,7 +103,7 @@ class AnswerResultDto {
       correctAnswer = json['correctAnswer'] as String,
       previousStage = json['previousStage'] as int,
       newStage = json['newStage'] as int,
-      nextReviewDate = json['nextReviewDate'] as String,
+      nextReviewDate = json['nextReviewDate'] as String?,
       questionStatus = json['questionStatus'] as String,
       mastered = json['mastered'] as bool,
       shortNote = json['shortNote'] as String?,
@@ -113,13 +113,14 @@ class AnswerResultDto {
           .toList(),
       imageAccessUri = json['imageAccessUri'] as String,
       sessionCompleted = json['sessionCompleted'] as bool;
-  final String itemId,
-      questionId,
-      correctAnswer,
-      nextReviewDate,
-      questionStatus;
+  final String itemId, questionId, correctAnswer, questionStatus;
   final bool skipped, mastered, sessionCompleted;
-  final String? skipReason, result, selectedAnswer, shortNote, mistakeReason;
+  final String? skipReason,
+      result,
+      selectedAnswer,
+      shortNote,
+      mistakeReason,
+      nextReviewDate;
   final int previousStage, newStage;
   final List<SolutionImageDto> solutionImages;
   final String imageAccessUri;

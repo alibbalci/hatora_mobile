@@ -43,7 +43,12 @@ class DashboardQuestionSummaryDto {
 
 class DashboardDto {
   DashboardDto.fromJson(Map<String, dynamic> json)
-    : activeExam = ActiveExamSummaryDto.fromJson(
+    : study = json['study'] is Map
+          ? DashboardStudyDto.fromJson(
+              Map<String, dynamic>.from(json['study'] as Map),
+            )
+          : null,
+      activeExam = ActiveExamSummaryDto.fromJson(
         json['activeExam'] as Map<String, dynamic>,
       ),
       review = ReviewSummaryDto.fromJson(
@@ -59,4 +64,21 @@ class DashboardDto {
   final ReviewSummaryDto review;
   final DashboardProgressSummaryDto progress;
   final DashboardQuestionSummaryDto questions;
+  final DashboardStudyDto? study;
+}
+
+class DashboardStudyDto {
+  DashboardStudyDto.fromJson(Map<String, dynamic> json)
+    : upcoming = (json['upcomingDays'] as List? ?? const [])
+          .map((v) => Map<String, dynamic>.from(v as Map))
+          .toList(),
+      today = DateTime.parse(json['today'] as String),
+      days = (json['weekDays'] as List)
+          .map((v) => Map<String, dynamic>.from(v as Map))
+          .toList(),
+      tomorrowQuestions = (json['tomorrowQuestionCount'] as num).toInt(),
+      tomorrowTopics = (json['tomorrowTopicCount'] as num).toInt();
+  final DateTime today;
+  final List<Map<String, dynamic>> days, upcoming;
+  final int tomorrowQuestions, tomorrowTopics;
 }

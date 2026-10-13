@@ -16,6 +16,12 @@ class CatalogRemoteDataSource {
     return response.data!.map((e) => parse(e as Map<String, dynamic>)).toList();
   }
 
+  Future<List<ExamSessionDto>> sessions(String examId, String editionId) =>
+      _list(
+        '/api/catalog/exams/$examId/editions/$editionId/sessions',
+        ExamSessionDto.fromJson,
+      );
+
   Future<List<ExamDto>> exams() =>
       _list('/api/catalog/exams', ExamDto.fromJson);
   Future<List<EditionDto>> editions(String examId) =>

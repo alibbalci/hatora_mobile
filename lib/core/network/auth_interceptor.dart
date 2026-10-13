@@ -27,8 +27,17 @@ class AuthInterceptor extends Interceptor {
             ),
           );
         }
+        final epoch = tokens.generation;
         final pair = await tokens.storage.read();
-        options.extra['generation'] = tokens.generation;
+        if (epoch != tokens.generation) {
+          return handler.reject(
+            DioException(
+              requestOptions: options,
+              type: DioExceptionType.cancel,
+            ),
+          );
+        }
+        options.extra['generation'] = epoch;
         if (pair != null) {
           options.headers['Authorization'] = 'Bearer ${pair.accessToken}';
         }
@@ -43,11 +52,26 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final error = err;
     final request = error.requestOptions;
+    final body = error.response?.data;
+    if (error.response?.statusCode == 401 &&
+        body is Map &&
+        body['code'] == 'ACCOUNT_DISABLED' &&
+        request.extra['public'] != true &&
+        request.extra['generation'] == tokens.generation) {
+      try {
+        await tokens.clear(
+          expectedGeneration: request.extra['generation'] as int?,
+        );
+      } catch (_) {}
+      return handler.next(error);
+    }
     if (error.response?.statusCode == 401 &&
         request.extra['retried'] == true &&
         request.extra['generation'] == tokens.generation) {
       try {
-        await tokens.clear();
+        await tokens.clear(
+          expectedGeneration: request.extra['generation'] as int?,
+        );
       } catch (_) {
         /* Preserve the HTTP failure. */
       }

@@ -40,6 +40,7 @@ class QuestionCaptureViewModel extends Notifier<CaptureState> {
   final ({PickQuestionImageUseCase pick, AnalyzeQuestionUseCase analyze})
   Function(Ref)
   resolve;
+  int _operation = 0;
   @override
   CaptureState build() {
     Future.microtask(recover);
@@ -85,10 +86,11 @@ class QuestionCaptureViewModel extends Notifier<CaptureState> {
   Future<void> analyze() async {
     final image = state.image;
     if (state.busy || image == null) return;
+    final operation = ++_operation;
     state = CaptureState(phase: CapturePhase.analyzing, image: image);
     try {
       final analysis = await resolve(ref).analyze(image);
-      if (ref.mounted) {
+      if (ref.mounted && operation == _operation) {
         state = CaptureState(
           image: image,
           analysis: analysis,
@@ -100,7 +102,7 @@ class QuestionCaptureViewModel extends Notifier<CaptureState> {
     } on AppFailure catch (failure) {
       // TR: Yükleme hatasında analiz kimliği yoktur; manuel kayıt uydurulmaz.
       // EN: A failed upload has no analysis id; never fabricate a manual record.
-      if (ref.mounted) {
+      if (ref.mounted && operation == _operation) {
         state = CaptureState(
           phase: CapturePhase.analysisFailure,
           image: image,
@@ -108,6 +110,12 @@ class QuestionCaptureViewModel extends Notifier<CaptureState> {
         );
       }
     }
+  }
+
+  void cancelAnalysis() {
+    if (state.phase != CapturePhase.analyzing) return;
+    _operation++;
+    state = CaptureState(phase: CapturePhase.imageSelected, image: state.image);
   }
 
   void reset() {

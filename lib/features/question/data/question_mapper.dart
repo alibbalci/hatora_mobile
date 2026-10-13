@@ -47,6 +47,7 @@ Question mapQuestion(QuestionDto dto) => Question(
   subjectId: dto.subjectId,
   sectionName: dto.sectionName,
   examCode: dto.examCode,
+  examId: dto.examId,
   shortNote: dto.shortNote,
   source: dto.source,
   reviewStage: dto.reviewStage,

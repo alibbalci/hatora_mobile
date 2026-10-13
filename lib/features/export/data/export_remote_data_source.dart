@@ -9,6 +9,23 @@ class ExportRemoteDataSource {
   const ExportRemoteDataSource(this.dio);
   final Dio dio;
 
+  Future<ExportOptions> options() async {
+    final json = (await dio.get<Map<String, dynamic>>('/api/exports/options'))
+        .data!;
+    return ExportOptions(
+      (json['totalCount'] as num).toInt(),
+      (json['subjects'] as List)
+          .map(
+            (s) => ExportSubjectCount(
+              s['subjectId'] as String,
+              s['subjectName'] as String,
+              (s['questionCount'] as num).toInt(),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Future<ExportJobDto> create({String? subjectId, String? topicId}) async =>
       ExportJobDto.fromJson(
         (await dio.post<Map<String, dynamic>>(

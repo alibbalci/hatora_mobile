@@ -19,8 +19,10 @@ class QuestionEditState {
     this.saved,
     this.topics = const [],
     this.selectedTopic,
+    this.answerOptionCount = 5,
   });
   final bool loading, busy;
+  final int answerOptionCount;
   final Question? question, saved;
   final String answer, note, source;
   final MistakeReason? reason;
@@ -28,6 +30,19 @@ class QuestionEditState {
   final AppFailure? failure;
   final List<Topic> topics;
   final Topic? selectedTopic;
+  int get changeCount {
+    final q = question;
+    if (q == null) return 0;
+    return [
+      answer != q.correctAnswer,
+      reason != q.mistakeReason,
+      difficulty != q.difficulty,
+      note != q.shortNote,
+      source != q.source,
+      selectedTopic != null && selectedTopic!.id != q.topicId,
+    ].where((v) => v).length;
+  }
+
   QuestionEditState copyWith({
     bool? loading,
     bool? busy,
@@ -41,6 +56,7 @@ class QuestionEditState {
     List<Topic>? topics,
     Topic? selectedTopic,
   }) => QuestionEditState(
+    answerOptionCount: answerOptionCount,
     loading: loading ?? this.loading,
     busy: busy ?? this.busy,
     question: question,
@@ -75,11 +91,12 @@ class QuestionEditViewModel extends Notifier<QuestionEditState> {
   Future<void> load() async {
     try {
       final q = await resolve(ref).get(id);
-      final catalog = await resolve(ref).catalog();
+      final catalog = await resolve(ref).catalog(examId: q.examId);
       if (ref.mounted) {
         state = QuestionEditState(
           loading: false,
           question: q,
+          answerOptionCount: catalog.exam.answerOptionCount,
           answer: q.correctAnswer,
           reason: q.mistakeReason,
           difficulty: q.difficulty,
@@ -103,9 +120,33 @@ class QuestionEditViewModel extends Notifier<QuestionEditState> {
   void note(String v) => state = state.copyWith(note: v);
   void source(String v) => state = state.copyWith(source: v);
   void topic(Topic value) => state = state.copyWith(selectedTopic: value);
+  void revert() {
+    final q = state.question;
+    if (q == null || state.busy) return;
+    state = QuestionEditState(
+      loading: false,
+      question: q,
+      answerOptionCount: state.answerOptionCount,
+      answer: q.correctAnswer,
+      reason: q.mistakeReason,
+      difficulty: q.difficulty,
+      note: q.shortNote,
+      source: q.source,
+      topics: state.topics,
+      selectedTopic: state.topics.where((t) => t.id == q.topicId).firstOrNull,
+    );
+  }
+
   Future<void> submit() async {
     if (state.busy || state.question == null) return;
-    if (state.answer.length != 1) {
+    if (!List.generate(
+          state.answerOptionCount,
+          (i) => String.fromCharCode(65 + i),
+        ).contains(state.answer) ||
+        state.reason == null ||
+        state.difficulty == null ||
+        state.note.length > 2000 ||
+        state.source.length > 500) {
       state = state.copyWith(
         failure: const AppFailure(
           FailureKind.validation,
