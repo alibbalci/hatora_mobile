@@ -11,7 +11,7 @@ flutter pub get
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
 
-The default URL uses 10.0.2.2 on Android and 127.0.0.1 on other platforms. For a physical device, configure a reachable backend URL. Release builds require HTTPS; local cleartext is enabled only in the Android debug manifest.
+Debug builds default to 10.0.2.2 on Android and 127.0.0.1 on other platforms. Release builds default to https://hatorabackend-bootstrap.onrender.com; API_BASE_URL can override it. For a physical device, configure a reachable backend URL. Release builds require HTTPS; local cleartext is enabled only in the Android debug manifest.
 
 If desktop plugin symlink creation fails on Windows, use these process-local options for Android work:
 
